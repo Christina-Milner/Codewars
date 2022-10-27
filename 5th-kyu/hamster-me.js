@@ -22,6 +22,7 @@ function hamsterMe(code, message) {
       for (let letter of tempArr) {
         if (code.includes(letter)) {
           alphabet = tempArr.slice(tempArr.indexOf(letter)).concat(tempArr.slice(0, tempArr.indexOf(letter))).join('')
+          // oops, noticed after submitting I forgot a break here, it somehow works anyway
         }
       }
     }
