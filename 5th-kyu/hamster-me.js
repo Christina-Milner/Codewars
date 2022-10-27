@@ -39,3 +39,4 @@ function hamsterMe(code, message) {
     }
     return message.split('').map(e => mapping[e].join('')).join('')
 }
+
