@@ -5,14 +5,39 @@ i, and j. */
 //P: An integer
 //R: An array of 3 integers
 
+/* Figured this out - leaving old attempt at a solution below as a cautionary tale against trying to
+derive the logic piecemeal by looking at the tests instead of looking at the bigger picture */
+
+function smallest(n) {
+  let numArr = String(n).split('').map(e => Number(e))
+  let newNum = n
+  let iVar = 0
+  let jVar = 0
+  for (let i = 0; i < numArr.length; i++) {
+    let numToMove = numArr[i]
+    let newNumArr = numArr.slice(0, i).concat(numArr.slice(i + 1))
+    for (let j = 0; j <= newNumArr.length; j++) {
+      let num = Number(newNumArr.slice(0, j).concat(numToMove).concat(newNumArr.slice(j)).join(''))
+      if (num < newNum) {
+        newNum = num
+        iVar = i
+        jVar = j
+      }
+    }
+  }
+  return [newNum, iVar, jVar]
+}
+
+
+/*
 function smallest(n) {
     console.log(n)
     let numArr = String(n).split('').map(e => Number(e))
-    /* From tests:
-      - Find the smallest digit and move it to the front
-      - If it's already at the front, find the next smallest and move it to 1
-      - If the digit at [1] is a 0, move the digit at [0] instead - ooh, but what if multiple zeroes?
-      */
+      //  From tests:
+      // - Find the smallest digit and move it to the front
+      // - If it's already at the front, find the next smallest and move it to 1
+      // - If the digit at [1] is a 0, move the digit at [0] instead - ooh, but what if multiple zeroes?
+      
     if (numArr[1] == 0) {                 // Move first digit behind any following zeroes
       let tempArr = numArr.slice(1)
       let j = 0
@@ -44,12 +69,4 @@ function smallest(n) {
     numArr.splice(i + 1, 1)
     return [Number(numArr.map(e => String(e)).join('')), i, j]  
 }
-
-/* WIP - passes about 3/4 of the random tests, but keep having to account for more cases that break the logic.
-May have to rewrite to change it to more of a brute force approach as there's too many holes in the logic
-described in the comment inside the function.
-- If there's multiple zeroes, we want to sometimes pick one from the back but not always - in 5807900218252322, we want the first one
-  because of the arbitrary and extremely irksome requirement to keep the index low
-- 1586897492995867 should produce [1258689749995867, 9, 1] not [2158689749995867, 9, 0], so logic for j needs some more fixing
-- 935855753 - here, the lowest digit isn't actually what we're after as moving the 9 all the way to the back results in the lowest number
-- 2443261318465736 - moving the 1 at index 8 instead of 6 results in a lower number */
+*/
