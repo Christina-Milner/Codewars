@@ -10,22 +10,14 @@ Keep track of which indices we have been to and return -1 if we return to one al
 It is dawning on me as I'm setting up all these helper variables that a recursive function can probably do this more elegantly. */
 
 
-/* Umm ... don't ask, but this repeatedly failed at correctly returning -1 when an element is zero (meaning the frog doesn't go anywhere)
-for no apparent reason (shouldn't even need else as the return will exit out if one of the ifs applies), so I got mad and did this and now
-it passes */
+/* Update - I realised what the problem with this was while sitting on the sofa watching Netflix later in the evening.
+Breaking news - 0 is falsy.*/
 
 
 function solution(a) {
 
     const frogJumper = (arr, idx = 0, count = 0) => {
-      if (arr[idx] == 0) {return -1}
-      if (arr[idx] == 0) {return -1}
-      if (arr[idx] == 0) {return -1}
-      if (arr[idx] == 0) {return -1}
-      if (arr[idx] == 0) {return -1}
-      if (arr[idx] == 0) {return -1}
-      if (arr[idx] == 0) {return -1}
-      if (!arr[idx]) {return count}
+      if (idx < 0 || idx > arr.length - 1) {return count}
       else if (count > arr.length) {return -1}
       else if (arr[idx] == 0) {return -1}
       else {return frogJumper(arr, idx + arr[idx], count + 1)}
