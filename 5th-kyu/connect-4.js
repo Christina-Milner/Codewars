@@ -124,4 +124,10 @@ class Connect4 {
 /* I had a massive WIP version here followed by a paragraph about how it was going to be a WIP for another day as I couldn't get the diagonals
 to work, and as I was writing it, it began to dawn on me what to do instead. So here we have it! 
 The horizontal function is now poorly named, but I realised after I'd written it that I was going to have to recycle that logic for all
-the other directions and it made more sense to just feed arrays of the elements found in other directions into the same function.*/
+the other directions and it made more sense to just feed arrays of the elements found in other directions into the same function.
+
+Oh, and one addendum regarding "returnMessageBecauseWhyTheHell": Before I'd even started coding the logic checking for a winner, I was
+baffled why play() wasn't even passing the first sample test unless I initialised the object starting with player 2. A look at the comments
+then revealed that "Player n has a turn" is supposed to mean "Player n JUST HAD a turn", rather than indicating whose turn it is now,
+which irritated me as it makes zero sense. That means that return message had to be declared before swapping the current player over,
+and, well, the variable name reflects this irritation.*/
