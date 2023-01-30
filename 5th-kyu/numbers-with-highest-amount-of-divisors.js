@@ -32,8 +32,10 @@ function procArrInt(listNum) {
     const findDivisors = num => {
         let divisors = [1, num]
         for (let i = 2; i <= Math.sqrt(num); i++) {
-            if (num % i == 0) {
+            if (num % i == 0 && i < Math.sqrt(num)) {
                 divisors.push(i, num / i)
+            } else if (num % i == 0) {
+              divisors.push(i)
             }
         }
         return divisors
@@ -60,3 +62,6 @@ function procArrInt(listNum) {
 /* The number of divisors was randomly off in random tests here and there and I couldn't figure out why, esp since console.logs for the randoms
 seemed to all be overridden by an inbuilt log that just said the array length. While trying to figure it out, I clicked attempt again and got
 a round where they all passed, so... going to call that good enough and stay away from math problems again. */
+
+/* UPDATE: Suddenly dawned on me after I'd already closed VS Code and everything that the square root was getting added twice if it's a 
+clean divide. Updated above and refactored, now reliably passes. */
