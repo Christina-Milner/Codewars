@@ -44,9 +44,9 @@ why that would be the problem. It's tail recursive and all. I'll try an iterativ
 function partsSums(ls) {
     let result = [0]
     for (let i = ls.length - 1; i >= 0; i--) {
-        result.push(ls[i] + result[i - 1])
+        result.unshift(ls[i] + result[0])
     }
-    return result.reverse()
+    return result
 }
 
 /* Ok, now it times out instead of producing a stack overflow. Glad we cleared that up. */
