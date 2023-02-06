@@ -23,3 +23,20 @@ function expandedForm(num) {
 /* The filter(e => e) seems clumsy so I was wondering if I couldn't use reduce for this instead, but it seems to be impossible to do so without
 having an extra plus floating around at the start of each string (because accumulator starts empty and then gets stuff concatenated onto it with pluses).
 In any case, the reduce would've needed so many extra checks it would be no more concise than using map, so we just go with that. */
+
+/* Update: Figured out how to do it with reduce, but it definitely isn't more concise than map + filter: */
+
+function expandedForm(num) {
+  const [beforeDecimal, afterDecimal] = [String(num).split('.')[0], String(num).split('.')[1]]
+  const firstPart = beforeDecimal ? beforeDecimal.split('').reduce((a, b, i, arr) => {
+    if (i == 0 && Number(b)) {return `${Number(b) * 10 ** (arr.length - i - 1)}`}
+    else if (i == 0) {return a}
+    return Number(b) ? a ? `${a} + ${Number(b) * 10 ** (arr.length - i - 1)}` : `${Number(b) * 10 ** (arr.length - i - 1)}` : a
+    }, "") : ""
+  const secondPart = afterDecimal ? afterDecimal.split('').reduce((a, b, i, arr) => {
+    if (i == 0 && Number(b)) {return `${b}/${10 ** (i + 1)}`}
+    else if (i == 0) {return a}
+    return Number(b) ? a ? `${a} + ${b}/${10 ** (i + 1)}` : `${b}/${10 ** (i + 1)}` : a
+    }, "") : ""
+  return firstPart ? secondPart ? `${firstPart} + ${secondPart}` : firstPart : secondPart
+}
