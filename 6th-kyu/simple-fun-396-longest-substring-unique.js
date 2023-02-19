@@ -17,13 +17,12 @@ function longestSubstringOf(string) {
             substr += letter
         }
         else {
-            if (substr.length > max) {
-                max = substr.length
-            }
-            substr = substr.slice(substr.indexOf(letter))
+            substr = substr.slice(substr.indexOf(letter) + 1)
+            substr += letter
+        }
+        if (substr.length > max) {
+            max = substr.length
         }
     }
     return max
 }
-
-/* WIP - don't actually have time */
