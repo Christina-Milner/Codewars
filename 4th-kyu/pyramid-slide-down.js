@@ -65,10 +65,22 @@ function longestSlideDown (pyramid){
         }
         return slidingSums(arr.slice(1), newAcc)
     }
-    let sums = slidingSums(copy).reduce((a, b) => a.concat(b))
+    let sums = slidingSums(copy).reduce((a, b) => a.concat(b), [])
     return sums.reduce((a, b) => Math.max(a, b))
 }
 
 /* This was more complicated than I thought as the size of acc grows compared to the current subarray.
 Solved that by creating arrays for the branches to keep the number of elements the same as it was in the array row.
 Passes fixeds, times out/runs out of memory on the large tests. WIP. */
+
+function longestSlideDown(pyramid) {
+    let copy = pyramid.slice()
+    let current = copy.pop()
+    while (copy.length) {
+        let next = copy.pop()
+        current = next.map((e, i) => Math.max(e + current[i], e + current[i] + 1))
+    }
+    return current.reduce((a, b) => Math.max(a, b))
+}
+
+/* ^ New approach after someone pointed out to me it might be wise to start at the bottom, but that doesn't work yet either. */
