@@ -78,9 +78,10 @@ function longestSlideDown(pyramid) {
     let current = copy.pop()
     while (copy.length) {
         let next = copy.pop()
-        current = next.map((e, i) => Math.max(e + current[i], e + current[i] + 1))
+        current = next.map((e, i) => Math.max(e + current[i], e + current[i + 1]))
     }
     return current.reduce((a, b) => Math.max(a, b))
 }
 
-/* ^ New approach after someone pointed out to me it might be wise to start at the bottom, but that doesn't work yet either. */
+/* New approach after someone pointed out to me I should start from the bottom. Didn't work initially, but one look at it
+with a slightly fresher brain and spotted it was because the " + 1" was in the wrong place. Now I feel really stupid for the monstrosity above.*/
