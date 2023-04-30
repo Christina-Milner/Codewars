@@ -19,11 +19,6 @@ function parseInt(string) {
     if (string === "zero") {
         return 0
     }
-    const words = {
-        "million": 7,
-        "thousand": 4,
-        "hundred": 3,
-    }
     const tens = {
         "ninety": 9,
         "eighty": 8,
@@ -69,7 +64,7 @@ function parseInt(string) {
         "ones": 0
     }
     let rounds = 0
-    let loops = 0
+
     while (cleanStrArr.length) {
         let next = cleanStrArr.pop()
         // Last two digits
@@ -123,15 +118,49 @@ function parseInt(string) {
                 else if (amount in tens) {
                     number["ten thousands"] = tens[amount]
                 }
+                else if (amount == "hundred") {
+                    let nextDigit = cleanStrArr.pop()
+                    number["hundred thousands"] = ones[nextDigit]
+                }
             }
             else {
                 cleanStrArr.push(next)
             }
-            rounds++    // Deal with hundreds of thousands next
+            rounds++    
             continue
         }
-        loops++
-        if (loops > 5) {break}
+        // Millions, or hundred thousands
+        if (rounds == 3) {
+            if (next == "hundred") {
+                let nextDigit = cleanStrArr.pop()
+                number["hundred thousands"] = ones[nextDigit]
+            }
+            else if (next == "million") {
+                let nextDigit = cleanStrArr.pop()
+                number["millions"] = ones[nextDigit]
+            }
+        }
     }
     return Number(Object.values(number).join(''))
+  }
+
+/* The above works and passes all tests, but it's kind of monstrous. Played around a bit trying to find a smarter solution using RegEx,
+but can't quite see how to get past the "hundred thousand" hurdle. Let's see what others have used. */
+/* For reference, this would have been how to do it (modified to get rid of "var" and define constants inside the function like I like to do): */
+
+ 
+function parseInt(str) {
+    const words = {
+        "zero":0, "one":1, "two":2, "three":3, "four":4, "five":5, "six":6, "seven":7, "eight":8, "nine":9, 
+        "ten":10, "eleven":11, "twelve":12, "thirteen":13, "fourteen":14, "fifteen":15, "sixteen":16, 
+        "seventeen":17, "eighteen":18, "nineteen":19, "twenty":20, "thirty":30, "forty":40, "fifty":50, 
+        "sixty":60, "seventy":70, "eighty":80, "ninety":90
+      }
+    const mult = { "hundred":100, "thousand":1000, "million": 1000000 }
+
+    return str.split(/ |-/).reduce(function(value, word) {
+        if (words[word]) value += words[word];
+        if (mult[word]) value += mult[word] * (value % mult[word]) - (value % mult[word]);
+        return value;
+    }, 0);
   }
