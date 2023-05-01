@@ -45,13 +45,41 @@ function parseMolecule(formula) {
         if (!formulaClean.includes("(")) {
             break
         }
-        let bracket = formulaClean.match(/(\([a-zA-Z0-9]+?\))(\d)/g)
-        let outerMultiplier = Number(bracket[0][bracket[0].length - 1])
-        let iHateRegex = new RegExp(`(${elements.join('|')})\\d+`, 'g')
-        if (bracket[0].match()) {}
-        // Probably best to write a helper that deals with adding the individual elements, cause we'll be doing it a lot
+        formulaClean = formulaClean.replace(/\((\w*)\)(\d)/g, (match, g1, g2) => g1.repeat(g2))
+        formulaClean = formulaClean.replace(/\(\w*\)\D/g, match => match.replace(/\(|\)/g, ""))
+    }
+
+    // Add elements that need to be multiplied and get rid of them so we can count the rest
+    const pattern = new RegExp(`(${Object.keys(elements).join('|')})\\d+`, 'g')
+    let elsWithNumbers = formulaClean.match(pattern)
+
+    if (elsWithNumbers) {
+        elsWithNumbers.forEach(e => {
+            let number = Number(e.match(/\d+/)[0])
+            let el = e.split('').filter(f => !f.match(/\d/)).join('')
+            elements[el] += number
+        })
+    }
+    formulaClean = formulaClean.replace(pattern, "")
+
+    // Count what's left
+    for (let el of twoLetterElements) {
+        console.log(el, formulaClean.includes(String(el)))
+        if (formulaClean.includes(el)) {
+            let pattern = new RegExp(el, "g")
+            elements[el] += formulaClean.match(pattern).length
+        }
+    }
+    formulaClean = formulaClean.replace(filterTwoLetterEles, "")
+  
+    for (let el of singleLetterElements) {
+        if (formulaClean.includes(el)) {
+            let pattern = new RegExp(el, "g")
+            elements[el] += formulaClean.match(pattern).length
+        }
     }
     return elements
   }
 
-  /* Nope, not dealing with this regex nightmare now. */
+  /* Idea on how to progress with it occurred to me in the shower so I went back to it, but dear God were there a lot of kinks to iron out.
+  I never want to see RegEx again in my life. Also, the top solution by other people will probably be three lines long or something. */
