@@ -62,5 +62,114 @@ But yeah, um, going to have to circle back to this. At least it's comforting to 
 
 
 function solvePuzzle (clues) {
-    // Start your coding here...
+    let grid = Array.from({length: 4}, e => Array(4).fill(0))
+    // Indices for the clue on the other side of the row or column
+    const counterparts = {
+        0: 11, 1: 10, 2: 9, 3: 8, 4: 15, 5: 14, 6: 13, 7: 12, 8: 3, 9: 2, 10: 1, 11: 0, 12: 7, 13: 6, 14: 5, 15: 4
+    }
+    const rowComplete = row => {
+        const rowValues = grid.filter((_, i) => i === row)
+        for (let i = 1; i <= 4; i++) {
+            if (!rowValues.includes(i)) {
+                return false
+            }
+        }
+        return true
+    }
+    const colComplete = col => {
+        const colValues = grid.map(e => e[col])
+        for (let i = 1; i <= 4; i++) {
+            if (!colValues.includes(i)) {
+                return false
+            }
+        }
+        return true
+    }
+    const colValues = col => {
+        return grid.map(e => e[col])
+    }
+
+    const solutionComplete = () => {
+        return [0, 1, 2, 3].every(num => rowComplete(num) && colComplete(num))
+    }
+    // Fill in info based on 1 and 4 clues
+    for (let i = 0; i < clues.length; i++) {
+        if (i <= 3) {
+            if (clues[i] === 1) {
+                grid[0][i] = 4
+            }
+            if (clues[i] === 4) {
+                grid[0][i] = 1
+                grid[1][i] = 2
+                grid[2][i] = 3
+                grid[3][i] = 4
+            }
+        }
+        else if (i <= 7) {
+            if (clues[i] === 1) {
+                grid[i - 4][3] = 4
+            }
+            if (clues[i] === 4) {
+                grid[i - 4][3] = 1
+                grid[i - 4][2] = 2
+                grid[i - 4][1] = 3
+                grid[i - 4][0] = 4
+            }
+        }
+        else if (i <= 11) {
+            if (clues[i] === 1) {
+                grid[3][3 - (i - 8)] = 4
+            }
+            if (clues[i] === 4) {
+                grid[3][3 - (i - 8)] = 1
+                grid[2][3 - (i - 8)] = 2
+                grid[1][3 - (i - 8)] = 3
+                grid[0][3 - (i - 8)] = 4
+            }
+        }
+        else {
+            if (clues[i] === 1) {
+                grid[Math.abs(i - 15)][0] = 4
+            }
+            if (clues[i] === 4) {
+                grid[Math.abs(i - 15)][0] = 1
+                grid[Math.abs(i - 15)][1] = 2
+                grid[Math.abs(i - 15)][2] = 3
+                grid[Math.abs(i - 15)][3] = 4
+            }
+        }
+    }
+
+    // Find the remaining 4s
+    for (let i = 0; i < grid.length; i++) {
+        if (grid[i].includes(4)) {
+            continue
+        }
+        for (let j = 0; j < grid[i].length; j++) {
+            if (colValues(j).includes(4)) {
+                continue
+            }
+            if (i === 1 && j > 0 && j < 3 && (clues[14] === 2 || clues[5] === 2 || clues[5] === 3)) {
+                grid[i][j] = 4
+            }
+            if (i === 2 && j > 0 && j < 3 && (clues[13] === 2 || clues[6] === 2 || clues[6] === 3)) {
+                grid[i][j] = 4
+            }
+        }
+    }
+    if (grid.filter(e => e.includes(4)).length === 3) {
+        for (let i = 0; i < grid.length; i++) {
+            if (grid[i].includes(4)) {
+                continue
+            }
+            for (let j = 0; j < grid[i].length; j++) {
+                console.log(colValues(j))
+                if (!colValues(j).includes(4)) {
+                    grid[i][j] = 4
+                }
+            }
+        }
+    }
+    console.log(grid)
+    return grid
 }
