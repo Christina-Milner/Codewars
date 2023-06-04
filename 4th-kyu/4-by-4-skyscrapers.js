@@ -16,7 +16,7 @@ Given the clues as an array of numbers in a clockwise order, return the skyscrap
 
 Hmmm.
 4 - 1 2 3 4 - 1
-2 - 1 2 4 3 - 2
+3 - 1 2 4 3 - 2
 3 - 1 3 2 4 - 1
 3 - 1 3 4 2 - 2
 2 - 1 4 2 3 - 2
@@ -92,6 +92,33 @@ function solvePuzzle (clues) {
     const solutionComplete = () => {
         return [0, 1, 2, 3].every(num => rowComplete(num) && colComplete(num))
     }
+
+    const lastOneMissing = num => {
+        for (let i = 0; i < grid.length; i++) {
+            if (grid[i].includes(num)) {
+                continue
+            }
+            for (let j = 0; j < grid[i].length; j++) {
+                if (!colValues(j).includes(num)) {
+                    grid[i][j] = num
+                }
+            }
+        }
+    }
+    const rowLookup = {
+        0: {left: 15, right: 4},
+        1: {left: 14, right: 5},
+        2: {left: 13, right: 6},
+        3: {left: 12, right: 7}
+    }
+
+    const colLookup = {
+        0: {top: 0, bottom: 11},
+        1: {top: 1, bottom: 10},
+        2: {top: 2, bottom: 9},
+        3: {top: 3, bottom: 8}
+    }
+
     // Fill in info based on 1 and 4 clues
     for (let i = 0; i < clues.length; i++) {
         if (i <= 3) {
@@ -158,18 +185,33 @@ function solvePuzzle (clues) {
         }
     }
     if (grid.filter(e => e.includes(4)).length === 3) {
-        for (let i = 0; i < grid.length; i++) {
-            if (grid[i].includes(4)) {
-                continue
+        lastOneMissing(4)
+    }
+    // Any clues of 2 where the 4 is on the other side of the column or row must have a 3 at the front
+    for (let i = 0; i < clues.length; i++) {
+        if (i <= 3) {
+            if (clues[i] === 2 && grid[3][i] === 4) {
+                grid[0][i] = 3
             }
-            for (let j = 0; j < grid[i].length; j++) {
-                console.log(colValues(j))
-                if (!colValues(j).includes(4)) {
-                    grid[i][j] = 4
-                }
+        }
+        else if (i <= 7) {
+            if (clues[i] === 2 && grid[i - 4][0] === 4) {
+                grid[i - 4][3] = 3
+            }
+        }
+        else if (i <= 11) {
+            if (clues[i] === 2 && grid[0][3 - (i - 8)] === 4) {
+                grid[3][3 - (i - 8)] = 3
+            }
+        }
+        else {
+            if (clues[i] === 2 && grid[Math.abs(i - 15)][3] === 4) {
+                grid[Math.abs(i - 15)][0] = 3
             }
         }
     }
+    // The 1 and 2 we can now place
+
     console.log(grid)
     return grid
 }
