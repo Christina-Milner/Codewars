@@ -68,7 +68,8 @@ function balancedParens(n) {
 Otherwise, pretty smooth even though this appears to be very slow, just on the border of what CW will let pass.
 I was about to do some more trouble-shooting, but turns out I only needed to take out my console.logs as it was buffer overflow that was causing it to fail eheheh.
 I am not sure why using combos.every(e => e.length === n * 2) did not work (once zero was accounted for separately), but for some reason that made the base case
-instantly fire regardless of n. */
+instantly fire regardless of n. 
+(Edit to add: This is because I'm dumb and any check for element lengths will return true on an empty array. I could've kept  it the way it was if I'd added the "combos[0] AND" check in front of it.)*/
 
 /* Ooo, this is essentially doing the same logic as me but looks a bit neater. I like this, keeping for reference: */
 
