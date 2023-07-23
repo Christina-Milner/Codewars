@@ -40,3 +40,11 @@ function josephusSurvivor(n, k) {
   }
 
 /* Nah, struggled for a bit, then just grabbed my code from Josephus permutations and adapted it to this scenario. The fact it's array-based is apparently not a problem. */
+
+/* Generalised formula for it, which I still don't really understand: */
+
+function josephusSurvivor(n, k) {
+    // Source: https://en.wikipedia.org/wiki/Josephus_problem#The_general_case
+    // (I couldn't come up with the formula myself :p)
+    return n === 1 ? 1 : ((josephusSurvivor(n - 1, k) + k - 1) % n) + 1;
+  }
