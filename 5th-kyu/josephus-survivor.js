@@ -48,3 +48,21 @@ function josephusSurvivor(n, k) {
     // (I couldn't come up with the formula myself :p)
     return n === 1 ? 1 : ((josephusSurvivor(n - 1, k) + k - 1) % n) + 1;
   }
+
+/* Interesting loop-based solution that does not use the formula off Wikipedia: (it's 9 months old, why is this person using var?) 
+line 3 and 4 are just creating the array with extra steps, but the rest is interesting. I clearly didn't recognise the pattern correctly.
+Should generally keep in mind that setting a separate index variable is a solution to the "modifying the array as I go along" problem, and that 
+convoluted ideas like my parameter to keep track of the wraparound shift that I couldn't get to update properly are probably not going to work.*/
+
+function josephusSurvivor(n,k){
+    var j=k-1;
+    var arr = [];
+    for (var i=1; i<=n; i++) arr.push(i);
+    while(arr.length>1) {
+      if (j>arr.length-1) j %= arr.length;
+      arr.splice(j,1);
+      j+=k-1;
+      if (j>arr.length-1) j %= arr.length;
+    }
+    return arr[0];
+  }
