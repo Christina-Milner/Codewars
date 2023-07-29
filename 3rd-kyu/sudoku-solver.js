@@ -17,62 +17,43 @@
 - So, first let's make the helpers. Rows are the sub-arrays, columns are the sub-arrays mapped to an element at a particular position, boxes are a horizontal and vertical slice combined - I have done
     a simpler sudoku-related kata before, so I might just go grab the code from there... er, or at least I thought I did? I know for a fact I've written this box code before. Ah, there it is, 
     validate sudoku, not sudoku validator. isValid() method from there:
-    isValid() {
-        const n = this.data.length
-        // Sneaky tests with Sudokus that violate the size constraints
-        if (!this.data.every(row => row.length === n)) {
-            return false
-        }
-        // On with the actual validation
-        const validate = arr => Array.from({length: n}, (_, i) => i + 1).every(e => arr.includes(e))
-        for (let i = 0; i < n; i++) {
-            // Rows
-            if (!validate(this.data[i])) {
-                return false
-            }
-            // Columns
-            if (!validate(this.data.map(row => row[i]))) {
-                return false
-            }
-        }
-        // Boxes
-        const root = Math.sqrt(n)
-        let rowGroups = []
-        let boxes = []
-        for (let i = 1; i <= root; i++) {
-            rowGroups.push(this.data.slice((i - 1) * root, i * root))
-        }
-        for (let group of rowGroups) {
-            for (let i = 1; i <= root; i++) {
-                let box = group.map(row => row.slice((i - 1) * root, i * root)).reduce((acc, cur) => acc.concat(cur), [])
-                boxes.push(box)
-            }
-        }
-        for (let box of boxes) {
-            if (!validate(box)) {
-                return false
-            }
-        }
-        return true;
-    }
+*/
 
+
+/* So, that does what I want it to do so far. The error in my thinking has actually occurred to me (when solving by hand, it's often not that there's only one number that can go in a square because all others are ruled out,
+but it's that one of the numbers that could go there can't go anywhere else in that row/column). But, at least for the example puzzle, there are actually multiple squares where only one entry is possible! I have a
+sneaking suspicion that this is a rabbit hole that won't go anywhere with tests emulating slightly harder puzzles, but let's see.
+Yeah, even after 1 round of that, there's no longer any unambiguous squares, so I am going to have to figure out the recursive "start filling stuff in and backtrack" method.
+This should be a good start for it to not try incorrect numbers, though. */
+
+/*
+Ok. Let's do this.
+- Recursive function that finds the first 0 in the array and then calls itself on all possibilities of what could be filled in there
+    - I use my existing possibilities() so it only tries numbers that don't violate obvious constraints
+- If the grid is full, check whether it is solved (need helpers for both of these - note to self, add comments on what each part does as this is rapidly getting out of hand), and if so, return it
+    - Otherwise, return nothing as an abort ... or just don't do anything? See how this works out
+- If possibilities() for a square are empty, also abort as it's clearly a wrong path
 
 */
 
 
 function sudoku(puzzle) {
-    const getColumns = () => {
+    // Numbers that can be used as I need this in multiple places
+    const nums = Array.from({length: 9}, (_, i) => i + 1)
+    // Returns an array of arrays that are the columns of the puzzle
+    const getColumns = (grid) => {
         let arr = []
         for (let i = 0; i < 9; i++) {
-            arr.push(puzzle.map(row => row[i]))
+            arr.push(grid.map(row => row[i]))
         }
         return arr
     }
-    const getBoxes = () => {
+    // Returns an array of arrays that are the 3x3 boxes
+    const getBoxes = (grid) => {
         let rowGroups = []
         let boxes = []
         for (let i = 1; i <= 3; i++) {
-            rowGroups.push(puzzle.slice((i - 1) * 3, i * 3))
+            rowGroups.push(grid.slice((i - 1) * 3, i * 3))
         }
         for (let group of rowGroups) {
             for (let i = 1; i <= 3; i++) {
@@ -82,36 +63,105 @@ function sudoku(puzzle) {
         }
         return boxes
     }
+    // Don't need rows as these are just the elements of the puzzle array
 
-    const findBox = (x, y) => {
+    // Find the 3 x 3 box that a given square at puzzle[y][x] is in
+    const findBox = (x, y, grid) => {
         if (y < 3) {
-            if (x < 3) {return getBoxes()[0]}
-            else if (x < 6) {return getBoxes()[1]}
-            else {return getBoxes()[2]}
+            if (x < 3) {return getBoxes(grid)[0]}
+            else if (x < 6) {return getBoxes(grid)[1]}
+            else {return getBoxes(grid)[2]}
         }
         else if (y < 6) {
-            if (x < 3) {return getBoxes()[3]}
-            else if (x < 6) {return getBoxes()[4]}
-            else {return getBoxes()[5]}
+            if (x < 3) {return getBoxes(grid)[3]}
+            else if (x < 6) {return getBoxes(grid)[4]}
+            else {return getBoxes(grid)[5]}
         }
         else {
-            if (x < 3) {return getBoxes()[6]}
-            else if (x < 6) {return getBoxes()[7]}
-            else {return getBoxes()[8]}
+            if (x < 3) {return getBoxes(grid)[6]}
+            else if (x < 6) {return getBoxes(grid)[7]}
+            else {return getBoxes(grid)[8]}
         }
     }
 
-    const possibilities = (x, y) => {
-        const nums = Array.from({length: 9}, (_, i) => i + 1)
-        return nums.filter(num => !puzzle[y].includes(num) && !getColumns()[x].includes(num) && !findBox(x, y).includes(num))
+    // Returns the possible choices for a square at x, y, excluding everything already present in that row, column or box
+    const isValid = (num, x, y, grid) => {
+         return !(grid[y].includes(num)) && !(getColumns(grid)[x].includes(num)) && !(findBox(x, y, grid).includes(num))
     }
 
-    let candidates = puzzle.map((row, idx) => row.map((num, i) => num ? num : possibilities(i, idx)))
-    
-  }
+    // Check whether the puzzle is filled out
+    const filled = grid => grid.every(row => !(row.includes(0)))
 
-  /* So, that does what I want it to do so far. The error in my thinking has actually occurred to me (when solving by hand, it's often not that there's only one number that can go in a square because all others are ruled out,
-    but it's that one of the numbers that could go there can't go anywhere else in that row/column). But, at least for the example puzzle, there are actually multiple squares where only one entry is possible! I have a
-    sneaking suspicion that this is a rabbit hole that won't go anywhere with tests emulating slightly harder puzzles, but let's see.
-    Yeah, even after 1 round of that, there's no longer any unambiguous squares, so I am going to have to figure out the recursive "start filling stuff in and backtrack" method.
-    This should be a good start for it to not try incorrect numbers, though. */
+    // Check whether it is actually solved correctly
+    const solved = grid => {
+        return nums.every(num => grid.every(row => row.includes(num)) && getColumns(grid).every(col => col.includes(num)) && getBoxes(grid).every(box => box.includes(num)))
+    }
+
+    let empties = []
+    for (let i = 0; i <= 8; i++) {
+        for (let j = 0; j <= 8; j++) {
+            if (!puzzle[i][j]) {
+                empties.push([i, j, 1])
+            }
+        }
+    }
+    let idx = 0
+
+    loop: while (!solved(puzzle)) {
+        console.log(puzzle.map(e => e.join('') + '\n').join(''))
+        //console.log("idx ", idx, "empties ", empties[idx])
+        for (let i = empties[idx][2]; i <= 9; i++) {
+            if (isValid(i, empties[idx][1], empties[idx][0], puzzle)) {
+                //console.log("Changing ", empties[idx][0], empties[idx][1], " to ", i)
+                puzzle[empties[idx][0]][empties[idx][1]] = i
+                empties[idx][2] = i
+                idx++
+                //console.log("Idx now ", idx)
+                continue loop
+            }
+        }
+        //console.log("Outside for loop")
+        if (idx > 0) {
+            idx--
+            empties = empties.map((e, i) => i > idx ? [e[0], e[1], 1] : e)
+            empties[idx][2]++
+          }
+    }
+    return puzzle
+}
+
+/* Previous recursive subfunction: */ 
+    const recursiveSolver = (grid) => {
+        //console.log(grid.map(e => e.join('') + '\n').join(''))
+        if (filled(grid)) {
+            console.log("Grid filled")
+            if (solved(grid)) {
+                console.log("Grid solved")
+                return grid
+            }
+            else return
+        }
+        else {
+            for (let y = 0; y <= 8; y++) {
+                for (let x = 0; x <= 8; x++) {
+                    if (!grid[y][x]) {
+                        console.log("Coordinates ", y, x)
+                        const possibilitiesArr = possibilities(x, y, grid)
+                        if (possibilitiesArr.length) {
+                            for (let num of possibilitiesArr) {
+                                let newGrid = grid.map((el, idx) => idx === y ? el.slice(0, x).concat(num).concat(el.slice(x + 1)) : el)
+                                const result = recursiveSolver(newGrid)
+                                if (result) {return result}
+                            }
+                        }
+                        else {console.log("No possibilities"); return}
+                    }
+                }
+            }
+        }
+    }
+        return recursiveSolver(puzzle)
+
+/* I'm really sad as I felt like this one was within my grasp, but I'm going to have to give up on it. Two days is way more time than one should be spending on one of these. After I couldn't get the recursive version to work,
+I read the wikipedia article on sudoku algorithms and tried to implement what was described there as a while loop, but that's timing out as well. */
+/* Having a look at the other solutions now to see what I missed and I'm struggling to understand those. */
