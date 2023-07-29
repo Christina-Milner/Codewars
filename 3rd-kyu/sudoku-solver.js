@@ -278,21 +278,6 @@ function sudoku(puzzle) {
     // Check whether the puzzle is filled out
     const filled = grid => grid.every(row => !(row.includes(0)))
 
-    // Check whether it is actually solved correctly
-    const solved = grid => {
-        return nums.every(num => grid.every(row => row.includes(num)) && getColumns(grid).every(col => col.includes(num)) && getBoxes(grid).every(box => box.includes(num)))
-    }
-
-    let empties = []
-    for (let i = 0; i <= 8; i++) {
-        for (let j = 0; j <= 8; j++) {
-            if (!puzzle[i][j]) {
-                empties.push([i, j, 1])
-            }
-        }
-    }
-    let idx = 0
-
     const recursiveSolver = (grid) => {
         //console.log(grid.map(e => e.join('') + '\n').join(''))
         if (filled(grid)) {
