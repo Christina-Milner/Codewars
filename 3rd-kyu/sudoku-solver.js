@@ -165,3 +165,158 @@ function sudoku(puzzle) {
 /* I'm really sad as I felt like this one was within my grasp, but I'm going to have to give up on it. Two days is way more time than one should be spending on one of these. After I couldn't get the recursive version to work,
 I read the wikipedia article on sudoku algorithms and tried to implement what was described there as a while loop, but that's timing out as well. */
 /* Having a look at the other solutions now to see what I missed and I'm struggling to understand those. */
+
+/* THis is probably the closest to what I was trying to do: */
+
+function isValid(board, row, col, num) {
+    for(let i = 0; i < 9; i++) {
+      if (board[row][i] === num || board[i][col] === num) {
+        return false
+      }
+    }
+    
+    const startRow = 3 * Math.floor(row / 3)
+    const startCol = 3 * Math.floor(col / 3)
+    
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (board[startRow + i][startCol + j] === num) {
+          return false
+        }
+      }
+    }
+    
+    return true
+  }
+  
+  function findEmptyCell (board) {
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        if (board[i][j] === 0) {
+          return [i, j]
+        }
+      }
+    }
+    return null
+  }
+  
+  function sudoku(puzzle) {
+    //return the solved puzzle as a 2d array of 9 x 9 
+    const emptyCell = findEmptyCell(puzzle);
+    if (!emptyCell) {
+      return puzzle
+    }
+    const [row, col] = emptyCell
+    for (let num = 1; num <=9; num++) {
+      if (isValid(puzzle, row, col, num)) {
+        puzzle[row][col] = num
+        if (sudoku(puzzle)) {
+          return puzzle
+        }
+        puzzle[row][col] = 0
+      }
+    }
+    
+    return false
+  }
+
+
+/* See if I can adapt my original solution */
+
+function sudoku(puzzle) {
+    // Numbers that can be used as I need this in multiple places
+    const nums = Array.from({length: 9}, (_, i) => i + 1)
+    // Returns an array of arrays that are the columns of the puzzle
+    const getColumns = (grid) => {
+        let arr = []
+        for (let i = 0; i < 9; i++) {
+            arr.push(grid.map(row => row[i]))
+        }
+        return arr
+    }
+    // Returns an array of arrays that are the 3x3 boxes
+    const getBoxes = (grid) => {
+        let rowGroups = []
+        let boxes = []
+        for (let i = 1; i <= 3; i++) {
+            rowGroups.push(grid.slice((i - 1) * 3, i * 3))
+        }
+        for (let group of rowGroups) {
+            for (let i = 1; i <= 3; i++) {
+                let box = group.map(row => row.slice((i - 1) * 3, i * 3)).reduce((acc, cur) => acc.concat(cur), [])
+                boxes.push(box)
+            }
+        }
+        return boxes
+    }
+    // Don't need rows as these are just the elements of the puzzle array
+
+    // Find the 3 x 3 box that a given square at puzzle[y][x] is in
+    const findBox = (x, y, grid) => {
+        if (y < 3) {
+            if (x < 3) {return getBoxes(grid)[0]}
+            else if (x < 6) {return getBoxes(grid)[1]}
+            else {return getBoxes(grid)[2]}
+        }
+        else if (y < 6) {
+            if (x < 3) {return getBoxes(grid)[3]}
+            else if (x < 6) {return getBoxes(grid)[4]}
+            else {return getBoxes(grid)[5]}
+        }
+        else {
+            if (x < 3) {return getBoxes(grid)[6]}
+            else if (x < 6) {return getBoxes(grid)[7]}
+            else {return getBoxes(grid)[8]}
+        }
+    }
+
+    // Returns the possible choices for a square at x, y, excluding everything already present in that row, column or box
+    const possibilities = (x, y, grid) => {
+        return nums.filter(num => !grid[y].includes(num) && !getColumns(grid)[x].includes(num) && !findBox(x, y, grid).includes(num))
+   }
+
+    // Check whether the puzzle is filled out
+    const filled = grid => grid.every(row => !(row.includes(0)))
+
+    // Check whether it is actually solved correctly
+    const solved = grid => {
+        return nums.every(num => grid.every(row => row.includes(num)) && getColumns(grid).every(col => col.includes(num)) && getBoxes(grid).every(box => box.includes(num)))
+    }
+
+    let empties = []
+    for (let i = 0; i <= 8; i++) {
+        for (let j = 0; j <= 8; j++) {
+            if (!puzzle[i][j]) {
+                empties.push([i, j, 1])
+            }
+        }
+    }
+    let idx = 0
+
+    const recursiveSolver = (grid) => {
+        //console.log(grid.map(e => e.join('') + '\n').join(''))
+        if (filled(grid)) {
+            return grid
+        }
+        let row, col
+        for (let y = 0; y <= 8; y++) {
+            for (let x = 0; x <= 8; x++) {
+                if (grid[y][x] === 0) {
+                    row = y
+                    col = x
+                }
+            }
+        }
+        const possibilitiesArr = possibilities(col, row, grid)
+        for (let num of possibilitiesArr) {
+            grid[row][col] = num
+            if (recursiveSolver(grid)) {
+                return grid
+            }
+            grid[row][col] = 0
+        }       
+    }
+    return recursiveSolver(puzzle)
+}
+
+/* Yay, at least now I don'T feel like I completely wasted all that time */
