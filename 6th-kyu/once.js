@@ -24,3 +24,14 @@ function once(fn) {
 
 /* Yup. Had to tinker with it a bit to get the syntax right (using spread operator so it behaves correctly with multiple parameters, needing to include the ternary as pop()() will otherwise throw errors when array is empty),
 but that was the general idea. */
+/* Noting this down for reference as while it doesn't matter whether one uses my array solution or a true/false flag to mark whether the function has been called, the use of apply is interesting: */
+
+function once(fn) { 
+    let x = false;
+        return function(...arguments) { 
+            if (!x) { 
+                x = true;
+                return fn.apply(this,arguments);
+            }
+        }
+    }
