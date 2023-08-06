@@ -78,3 +78,16 @@ Then figure out what the pattern here is:
 11482, 210916	ex: 6, act: 4
 11482, 210916, 613739	ex: 6, act: 4
 */
+/* Gave up and forfeited on this as my approach was going nowhere and a hint I got about modular exponentiation did not help. Solutions: */
+
+function lastDigit(as){
+    if (as.length<1) return 1;
+    let result = 1;
+    let arr = as.reverse();
+    for(let i=0; i< arr.length; i++){
+      let exp = Math.min(result, result % 4 + 4);
+      let b = Math.min(arr[i], arr[i] % 20 + 20);
+      result = b**exp;
+    }
+    return result %10;
+    }
