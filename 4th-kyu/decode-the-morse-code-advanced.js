@@ -25,20 +25,45 @@ HEY JUDE
 - Now split by "0" x 7 x unit to get the "words"
 - Split by "0" x unit to get the symbols
 - Any 0s left mark a change from dot to dash or vice versa
-
-
-
-
 */
 
 
-
 function decodeBits(bits) {
-    // ToDo: Accept 0's and 1's, return dots, dashes and spaces
-    return bits.replace('111', '-').replace('000', ' ').replace('1', '.').replace('0', '');
+    // Get rid of erroneous leading and trailing zeroes
+    while (bits[0] === "0") {
+        bits = bits.slice(1)
+    }
+    while (bits[bits.length - 1] === "0") {
+        bits = bits.slice(0, bits.length - 1)
+    }
+    // Look at the length of the groups of 1s and 0s to see what a "unit" is
+    let zeroes = bits.split(/1+/)
+    let ones = bits.split(/0+/)
+    console.log(zeroes, ones)
+    let oneUnit
+    if (!zeroes.join('')) {oneUnit = ones.map(e => e.length).filter(e => e).reduce((acc, cur) => Math.min(acc, cur))}
+    else if (!ones.join('')) {oneUnit = zeroes.map(e => e.length).filter(e => e).reduce((acc, cur) => Math.min(acc, cur))}
+    else {
+        oneUnit = Math.min((zeroes.map(e => e.length).filter(e => e).reduce((acc, cur) => 
+                  Math.min(acc, cur))), (ones.map(e => e.length).filter(e => e).reduce((acc, cur) => Math.min(acc, cur))))
+    }
+
+    // 0 x unit x 7 separates "words"
+    const wordSeparator = "0".repeat(oneUnit * 7)
+    let words = bits.split(wordSeparator)
+
+    // 0 x unit separates (most) characters
+    words = words.map(e => e.split("0".repeat(oneUnit)))
+
+    // 3 x unit x "1" is a dash, unit x "1" is a dot
+    words = words.map(e => e.reduce((acc, cur) => {
+        if (!cur) {return acc.concat(' ')}
+        if (cur === "1".repeat(oneUnit)) {return acc.concat(".")}
+        if (cur === "1".repeat(oneUnit * 3)) {return acc.concat("-")}
+    }, []).join('').replace(/  /g, " "))
+    return words.join('   ')
 }
 
 function decodeMorse(morseCode) {
-    // ToDo: Accept dots, dashes and spaces, return human-readable message
-    return morseCode.replace('.', MORSE_CODE['.']).replace('-', MORSE_CODE['-']).replace(' ', '');
+    return morseCode.split('   ').map(e => e.split(' ').map(char => MORSE_CODE[char]).join('')).join(' ')
 }
