@@ -30,19 +30,6 @@ The board is 8 x 8 and the knight is (obviously) not allowed to move off it.
 
 function knight(start, finish) {
     const alphabet = "abcdefgh"
-    const isReachable = (coord1, coord2) => {
-        let xdiff = Math.abs(alphabet.indexOf(coord1[0]) - alphabet.indexOf(coord2[0]))
-        if (!(xdiff === 1 || xdiff == 2)) {
-            return false
-        }
-        let ydiff = Math.abs(coord1[1] - coord2[1])
-        if (xdiff === 1) {
-             return ydiff === 2
-        }
-        if (xdiff === 2) {
-            return ydiff === 1
-        }
-    }
     const findPossibleMoves = coord => {
         let temp = []
         for (let thing of [[1, 2], [2, 1]]) {
@@ -62,7 +49,6 @@ function knight(start, finish) {
     }
 
     let movesQueue = []
-    let visited = []
 
     let possibles = findPossibleMoves(start)
     possibles.forEach(e => movesQueue.push([e, 1]))
@@ -72,7 +58,6 @@ function knight(start, finish) {
         if (next[0] == finish) {
             return next[1]
         }
-        visited.push(next[0])
         let nextOptions = findPossibleMoves(next[0])
         for (let move of nextOptions) {
             movesQueue.push([move, next[1] + 1])
@@ -85,3 +70,4 @@ function knight(start, finish) {
 - I originally wrote this using a recursive helper but ran into the issue that obviously, as we're looking for the shortest route, it couldn't just return the first one it found,
     but that meant it  ended up checking near infinite numbers of them and timing out. Eventually got a "BFS rather than DFS, yo" pointer.
 */
+/* Ok once I noticed I wasn't actually using the isReachable() function anymore, either, I did go back and refactor it to get rid of the clutter. */
