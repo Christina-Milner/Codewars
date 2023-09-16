@@ -48,75 +48,7 @@ Rules:
 
 */
 
-class Lift {
-    constructor(queues, capacity) {
-        this.floors = queues.length
-        this.queues = queues
-        this.capacity = capacity
-        this.floor = 0 // Do we actually need this? Probably for the "smart empty elevator" logic
-        this.moving = null
-        this.occupants = []
-        this.path = []
-    }
-
-    liftGoesBrr() {
-        this.atFloor(0)
-        while (this.queues.some(floor => floor.length) || this.occupants.length) {
-            this.moving = "up"
-            for (let i = this.floor; i < this.floors; i++) {
-                this.floor = i
-                if (this.queues[i].length || this.occupants.includes(i)) {
-                    this.atFloor(i)
-                }
-            }
-            this.moving = "down"        
-            for (let i = this.floor; i >= 0; i--) {
-                this.floor = i
-                if (this.queues[i].length || this.occupants.includes(i)) {
-                    this.atFloor(i)
-                }
-            }
-        }
-        this.atFloor(0)
-        if (this.path[0] !== 0) {
-            this.path.unshift(0)
-        }
-        if (this.path[this.path.length - 1] !== 0) {
-            this.path.push(0)
-        }
-        return this.path
-    }
-
-    atFloor(floor) {
-        console.log("Occupants ", this.occupants, "Waiting: ", this.queues[floor])
-        let temp = []
-        if (this.occupants.filter(person => person === floor).length) {
-            this.occupants = this.occupants.filter(person => person !== floor)
-            temp.push(-1)
-        }
-        let newPassengers = this.queues[floor].slice()
-        for (let i = 0; i < newPassengers.length; i++) {
-            if ((this.moving == "up" && newPassengers[i] > floor || this.moving == "down" && newPassengers[i] < floor) && this.occupants.length < this.capacity) {
-                this.occupants.push(newPassengers[i])
-                temp.push(i)
-            }
-        }
-        this.queues[floor] = this.queues[floor].filter((e, idx) => !temp.includes(idx))
-        console.log("Temp ", temp)
-        if (temp.length) {
-            console.log("PATH RECORDING: ", this.floor, this.moving, this.occupants)
-            this.path.push(floor)
-         }
-    }
-}
-
-
-
-function theLift(queues, capacity) {
-    console.log("Queues, capacity: ", queues, capacity)
-    let lift = new Lift(queues, capacity)
-    return lift.liftGoesBrr()
-}
+/* Old version of code removed for legibility, it's still in the commits */
 
 /* Passing basic tests, need to refine logic though. Lift currently stops at the same floor multiple times. 
 Easy enough to fix by disallowing the same number twice in a row if I can't fix the logic behind it, but there's other issues.
@@ -152,60 +84,68 @@ expected [ +0, 1, 2, 3, 2, 1, 2, 3, 2, 3, +0 ] to deeply equal [ +0, 1, 2, 3, 1,
 That seems to be the same problem in reverse, i.e. once it's reached 3, it should go "now everyone wants up" and go to the lowest floor.
 I should make the up and down for loops subfunctions before I put that in though, otherwise I'll have them both duplicated. Current progress: */
 
+/* (Next day)
+Ok, to-do:
+- Track whether the "up" or "down" button is pushed at a floor
+- Outsource the up for loop and down for loop to helper functions
+*/
+
 class Lift {
     constructor(queues, capacity) {
         this.floors = queues.length
         this.queues = queues
         this.capacity = capacity
-        this.floor = 0 // Do we actually need this? Probably for the "smart empty elevator" logic
+        this.floor = 0
         this.moving = null
         this.occupants = []
         this.path = []
     }
 
+    buttonPushed(floor) {
+        let waiting = this.queues[floor]
+        let pushed = []
+        if (waiting.some(person => person > floor)) {
+            pushed.push("up")
+        }
+        if (waiting.some(person => person < floor)) {
+            pushed.push("down")
+        }
+        return pushed
+    }
+
+    moveUp() {
+        this.moving = "up"
+        for (let i = this.floor; i < this.floors; i++) {
+            this.floor = i
+            if (this.buttonPushed(i).includes("up") || this.occupants.includes(i)) {
+                this.atFloor(i)
+            }
+        }
+    }
+
+    moveDown() {
+        this.moving = "down"        
+        for (let i = this.floor; i >= 0; i--) {
+            this.floor = i
+            if (this.buttonPushed(i).includes("down")|| this.occupants.includes(i)) {
+                this.atFloor(i)
+            }
+        }
+    }
+
     liftGoesBrr() {
         this.atFloor(0)
         while (this.queues.some(floor => floor.length) || this.occupants.length) {
-            if (this.floor == 0 && this.queues.every((floor, idx) => floor.every(person => person < idx))) {
-                this.floor = this.floors - 1
-                this.moving = "down"        
-                for (let i = this.floor; i >= 0; i--) {
-                      console.log("Down for loop ", i, this.queues[i].length,this.occupants.includes(i))
-                      this.floor = i
-                      if (this.queues[i].length || this.occupants.includes(i)) {
-                          this.atFloor(i)
-                      }
-                  }
-                
-            }
-            
-            this.moving = "up"
-            for (let i = this.floor; i < this.floors; i++) {
-                console.log("Up for loop ", i,  this.queues[i].length, this.occupants.includes(i))
-                this.floor = i
-                if (this.queues[i].length || this.occupants.includes(i)) {
-                    this.atFloor(i)
-                }
-            }
-            this.moving = "down"        
-            for (let i = this.floor; i >= 0; i--) {
-                console.log("Down for loop ", i, this.queues[i].length,this.occupants.includes(i))
-                this.floor = i
-                if (this.queues[i].length || this.occupants.includes(i)) {
-                    this.atFloor(i)
-                }
-            }
+            this.moveUp()
+            this.moveDown()           
         }
         this.atFloor(0)
         return this.path
     }
 
     atFloor(floor) {
-        console.log("Occupants ", this.occupants, "Waiting: ", this.queues[floor])
         let temp = []
-
         this.occupants = this.occupants.filter(person => person !== floor)
-
         let newPassengers = this.queues[floor].slice()
         for (let i = 0; i < newPassengers.length; i++) {
             if ((this.moving == "up" && newPassengers[i] > floor || this.moving == "down" && newPassengers[i] < floor) && this.occupants.length < this.capacity) {
@@ -214,20 +154,19 @@ class Lift {
             }
         }
         this.queues[floor] = this.queues[floor].filter((e, idx) => !temp.includes(idx))
-        console.log("Temp ", temp)
 
-        console.log("PATH RECORDING: ", this.floor, this.moving, this.occupants)
         if (this.path[this.path.length - 1] !== floor) {
             this.path.push(floor)
         }
-
     }
 }
 
-
-
 function theLift(queues, capacity) {
-    console.log("Queues, capacity: ", queues, capacity)
     let lift = new Lift(queues, capacity)
     return lift.liftGoesBrr()
 }
+
+/* BOOM! HAHA!
+So. Outsourcing the for loops wouldn't actually have been necessary, as I am no longer duplicating them within the while loop. But maybe it looks neater this way, idk.
+The crucial bit of info I had previously overlooked was that there isn't magical elevator logic, it just matters whether people have pushed the "up" or "down" button.
+Top solution by other people is somewhat similar, but also creates a new class for Floor. That would've been a good idea to clean it up. */
