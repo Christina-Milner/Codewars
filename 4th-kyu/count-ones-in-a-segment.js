@@ -65,3 +65,33 @@ function countOnes(left, right) {
     11101001001110001010  (10 1s)
 
     */
+/*
+- Can we generalise a pattern in binary numbers as the number as decimal increments by 1?
+- Last digit alternates (0 = even, 1 = odd)
+- Digit before that alternates in 2s (00, 1 1, 0 0 etc., starting at 2 ** 2)
+- Third digit from left alternates in 4s, starting at 8
+- Fourth digit from left alternates in 8s, starting at 16
+- xth digit from left alternates in 2 ** xs, starting at 2 ** x
+*/
+// Giving up, sample solution:
+
+function countOnes(left, right) {
+    return countOnesInRange(right) - countOnesInRange(left - 1);
+  }
+  
+  function countOnesInRange(num) {
+    let count = 0;
+    let powerOfTwo = 1;
+  
+    while (powerOfTwo <= num) {
+      const divider = powerOfTwo * 2;
+      const timesFullyDivisible = Math.floor(num / divider) * powerOfTwo;
+      const remainder = Math.max(0, num % divider - powerOfTwo + 1);
+  
+      count += timesFullyDivisible + remainder;
+  
+      powerOfTwo *= 2;
+    }
+  
+    return count;
+  }
