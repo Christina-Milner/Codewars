@@ -19,61 +19,40 @@
 */
 
 function getStartTime(schedules, duration) {
-    if (duration == 76) {return null}
-    console.log("Params: ", schedules, duration)
-    const convertTime = num => {
-        const mins = {0: "00", 0.25: "15", 0.5: "30", 0.75: "45"}
-        return `${String(Math.floor(num / 1)).padStart(2, "0")}:${mins[num % 1]}`
-    }
-    const convertToNum = time => {
-        try {
-        let nums = time.split(':')
-        const mins = {15: 0.25, 30: 0.5, 45: 0.75}
-        return Number(nums[0]) + (mins[nums[1]] || 0) }
-        catch(err) {
-          console.log("Error in convert to Num: ", time)
-        }
-    }
-    let durationNum = duration % 15 === 0 ? duration / 60 : Math.floor(duration / 60) + 0.25
-    let possibleTimes = []
-    let start = 9
-    let end = 19 - durationNum
-    for (let i = start; i <= end; i += 0.25) {
-        possibleTimes.push(convertTime(i))
-    }
-    for (let person of schedules) {
-        let unavailable = []
-        for (let j = 0; j < person.length; j++) {
-            let meeting = person[j]
-            for (let i = convertToNum(meeting[0]); i < convertToNum(meeting[1]); i += 0.25) {
-                unavailable.push(convertTime(i))
-            }
-            if (person[j + 1]) {
-                for (let i = convertToNum(person[j + 1][0]) - durationNum; i < convertToNum(person[j + 1][0]); i += 0.25) {
-                    unavailable.push(convertTime(i + 0.25))
-                }
-            }
-        }
-        console.log("unavailable: ", unavailable)
-        possibleTimes = possibleTimes.filter(time => !(unavailable.includes(time)))
-    }
-    console.log("Possible: ", possibleTimes)
-    return possibleTimes[0] || null
-  }
+    const startOfDay = 9 * 60
+    const endOfDay = 19 * 60
 
+    const sortedMeetings = [].concat(...schedules)
+        .map(meeting => ({
+            start: convertTimeToMinutes(meeting[0]),
+            end: convertTimeToMinutes(meeting[1])
+        }))
+        .sort((a, b) => a.start - b.start)
 
-  function getStartTime(schedules, duration) {
-    let possibleTimes = []
-    const addTime = (time, duration) => {
-        let [hours, mins] = time.split(':').map(Number)
-        if (mins + duration < 60) {
-            mins += duration
+    let bestStartTime = startOfDay
+
+    for (const meeting of sortedMeetings) {
+        if (meeting.start - bestStartTime >= duration) {
+            return formatMinutesAsTime(bestStartTime)
         }
-        else {
-            hours += Math.floor((mins + duration) / 60)
-            mins += (mins + duration) % 60
-        }
-        return `${String(hours).padStart(2, "0")}:${mins ? mins : "00"}`
+        bestStartTime = Math.max(meeting.end, bestStartTime)
     }
-    
+
+    if (endOfDay - bestStartTime >= duration) {
+        // Check if there's a slot available after the last meeting
+        return formatMinutesAsTime(bestStartTime)
+    }
+
+    return null; // No suitable slot found
+
+    function convertTimeToMinutes(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number)
+        return hours * 60 + minutes
+    }
+
+    function formatMinutesAsTime(minutes) {
+        const hours = Math.floor(minutes / 60)
+        const mins = minutes % 60
+        return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
+    }
 }
