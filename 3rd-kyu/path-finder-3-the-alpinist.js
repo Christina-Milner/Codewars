@@ -36,16 +36,29 @@ function pathFinder(area){
     }
     let grid = area.split('\n').map(row => row.split(''));
     let rounds = Infinity;
+    let firstRow = grid[0].reduce((acc, cur, idx, arr) => {
+        if (!idx) {return 0}
+        return acc + Math.abs(cur - arr[idx - 1])
+    }, 0)
+    let lastColumn = grid.map(e => e[e.length - 1]).reduce((acc, cur, idx, arr) => {
+        if (!idx) {return 0}
+        return acc + Math.abs(cur - arr[idx - 1])
+    }, 0)
+    rounds = firstRow + lastColumn
+    console.log("rounds ", rounds)
     let n = grid.length;
     let toVisit = [new Coord(0, 1, Math.abs(grid[0][1] - grid[0][0]), ["00", "01"]), new Coord(1, 0, Math.abs(grid[1][0] - grid[0][0]), ["00", "10"])];
     while (toVisit.length) {
         //console.log("ROUND START")
         //toVisit.forEach(e => console.log(e.toString()))
-        let next = toVisit.shift();
+        let next = toVisit.pop();
         if (next.y == n - 1 && next.x == n - 1) {
             rounds = Math.min(next.score, rounds);
             if (rounds == 0) {return rounds}
             continue;
+        }
+        if (next.score > rounds) {
+            continue
         }
         let north = next.y > 0 && !next.visited.includes(`${next.y - 1}${next.x}`);
         let west = next.x > 0 && !next.visited.includes(`${next.y}${next.x - 1}`);
@@ -54,7 +67,7 @@ function pathFinder(area){
         if (north) {
             let northAlt = Math.abs(grid[next.y][next.x] - grid[next.y - 1][next.x]);
             if (!northAlt) {
-                toVisit.unshift(new Coord(next.y - 1, next.x, next.score + northAlt, next.visited.concat(`${next.y - 1}${next.x}`)));
+                toVisit.push(new Coord(next.y - 1, next.x, next.score + northAlt, next.visited.concat(`${next.y - 1}${next.x}`)));
             }
             /*else {
                 toVisit.push(new Coord(next.y - 1, next.x, next.score + northAlt, next.visited.concat(`${next.y - 1}${next.x}`)));
@@ -63,7 +76,7 @@ function pathFinder(area){
         if (south) {
             let southAlt = Math.abs(grid[next.y][next.x] - grid[next.y + 1][next.x]);
             if (!southAlt) {
-                toVisit.unshift(new Coord(next.y + 1, next.x, next.score + southAlt, next.visited.concat(`${next.y + 1}${next.x}`)));
+                toVisit.push(new Coord(next.y + 1, next.x, next.score + southAlt, next.visited.concat(`${next.y + 1}${next.x}`)));
             }
             else {
                 toVisit.push(new Coord(next.y + 1, next.x, next.score + southAlt, next.visited.concat(`${next.y + 1}${next.x}`)));
@@ -72,7 +85,7 @@ function pathFinder(area){
         if (east) {
             let eastAlt =  Math.abs(grid[next.y][next.x] - grid[next.y][next.x + 1]);
             if (!eastAlt) {
-                toVisit.unshift(new Coord(next.y, next.x + 1, next.score + eastAlt, next.visited.concat(`${next.y}${next.x + 1}`)));
+                toVisit.push(new Coord(next.y, next.x + 1, next.score + eastAlt, next.visited.concat(`${next.y}${next.x + 1}`)));
             }
             else {
                 toVisit.push(new Coord(next.y, next.x + 1, next.score + eastAlt, next.visited.concat(`${next.y}${next.x + 1}`)));
@@ -81,7 +94,7 @@ function pathFinder(area){
         if (west) {
             let westAlt = Math.abs(grid[next.y][next.x] - grid[next.y][next.x - 1]);
             if (!westAlt) {
-                toVisit.unshift(new Coord(next.y, next.x - 1, next.score + westAlt, next.visited.concat(`${next.y}${next.x - 1}`)));
+                toVisit.push(new Coord(next.y, next.x - 1, next.score + westAlt, next.visited.concat(`${next.y}${next.x - 1}`)));
             }
             /*else {
                 toVisit.push(new Coord(next.y, next.x - 1, next.score + westAlt, next.visited.concat(`${next.y}${next.x - 1}`)));
@@ -95,3 +108,10 @@ function pathFinder(area){
 not the right ones (and comes with an additional performance cost.) Tried to balance it by using unshift only if the selected path didn't come with an altitude change, but it still times out. Probably need
 to find a way to cut down on the number of paths explored where it makes no difference. Actually. Unless following a path of no altitude changes, it shouldn't backtrack at all (i.e. no moving north).
 Update - that does seem to be the right path as disallowing moving north or west unless there's no altitude change has allowed it to pass another couple tests before running into the timeout.  */
+
+/* Update! I have:
+    - Changed the unshifts to push again, but also changed shift() at the start to pop(). Not using shift/unshift should help performance and this way it *should* explore one path fully before going down others
+    - Initialised rounds as the path you take if you go across the first row and then down the last column rather than Infinity (meaning the algorithm doesn't have to traverse a full path to get a comparison value)
+        and added a check that aborts if the current path is already longer than "rounds". It is now very close to passing, just choking on the large mazes still.
+
+*/
