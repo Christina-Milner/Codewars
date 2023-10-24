@@ -74,3 +74,12 @@ function rotate(matrix, direction) {
 /* Actually, figured out as I was telling someone about it why that happened - the outer array was copied, but the individual rows were still
 referring to the same objects. let copy = arr.slice().map(e => e.slice()) is what I needed. Howeverrr with that fix in place, the counterclockwise
 first version still struggles with non-square matrices so this version it is. */
+/* Added for reference - this is how I would have LIKED to solve this but my brain was tying itself into knots trying to figure out how you'd
+do it with map: */
+
+function rotate(matrix, direction) {
+    return direction == 'clockwise' ? 
+      matrix[0].map( (_, k) => matrix.map(a => a[k]).reverse() ) : 
+      matrix[0].map( (_, k) => matrix.map(a => a[k]) ).reverse()
+}
+
