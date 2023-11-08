@@ -24,60 +24,55 @@ Example
 
 
 
-function sortByName(ary) {
-    const digits = {
-        1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
-        6: "six", 7: "seven", 8: "eight", 9: "nine"
-    };
-    const powersOfTen = {
+function sortByName(arr) {
+    const powersWords = {
         2: "hundred", 3: "thousand", 6: "million"
     };
-    const teens = {
+
+    const powersOfTen = [6, 3, 2, 1, 0];
+    const numbers = {
+        0: "zero",
+        1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+        6: "six", 7: "seven", 8: "eight", 9: "nine",
         10: "ten", 11: "eleven", 12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen",
-        16: "sixteen", 17: "seventeen", 18: "eighteen", 19: "nineteen"
-    };
-    const tens = {
-        2: "twenty", 3: "thirty", 4: "forty", 5: "fifty",
-        6: "sixty", 7: "seventy", 8: "eighty", 9: "ninety"
+        16: "sixteen", 17: "seventeen", 18: "eighteen", 19: "nineteen", 20: "twenty", 30: "thirty", 40: "forty", 50: "fifty",
+        60: "sixty", 70: "seventy", 80: "eighty", 90: "ninety"
     };
 
     const numToWord = (num, acc = []) => {
+        if (!num && !acc.length) {
+            return numbers[num];
+        }
         if (!num) {
             return acc.join(' ');
         }
-        for (let i = 6; i >= 0; i--) {
-            if (num > 10 ** i) {
-                const int = Math.floor(num / 10 ** i);
-                const rest = num % 10 ** i;
-                if (i == 0) {
-                    acc.push(digits[int]);
+
+        for (let power of powersOfTen) {
+            if (num >= 10 ** power) {
+                const int = Math.floor(num / 10 ** power);
+                const rest = num % 10 ** power;
+                if (int == 1 && power == 1) {
+                    acc.push(numbers[num]);
+                    return numToWord(0, acc);
                 }
-                else if (i == 1) {
-                    if (num < 20) {
-                        acc.push(teens[num]);
-                        num = 0;
-                        return numToWord(num, acc);
-                    }
-                    else {
-                        acc.push(tens[int]);
-                    }
+                if (int * 10 ** power in numbers) {
+                    acc.push(numbers[int * 10 ** power]);
+                    return numToWord(rest, acc);
                 }
-                else if (i in powersOfTen) {
-                    acc.push(digits[int]);
-                    acc.push(powersOfTen[i]);
+                if (int in numbers) {
+                    acc.push(numbers[int]);
+                    acc.push(powersWords[power]);
+                    return numToWord(rest, acc);
                 }
-                else if (i == 4) {
-                    acc.push(tens[int]);
-                    acc.push("thousand");
-                }
-                else if (i == 5) {
-                    acc.push(digits[int]);
-                    acc.push("hundred thousand");
-                }
+                // If it's not in there, we're dealing with a "hundreds" problem
+                let hundredsInt = Math.floor(int / 100);
+                acc.push(numbers[hundredsInt]);
+                acc.push("hundred");
+                return numToWord(num - hundredsInt * 100 * 10 ** power, acc);
             }
-            /* WIP ^ streamline above and then here, make recursive call to modulo */
         }
     }
 
+    return arr.slice().sort((a, b) => numToWord(a).localeCompare(numToWord(b)));
 
   }
